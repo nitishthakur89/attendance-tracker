@@ -1,0 +1,213 @@
+{
+  "None": {
+    "2026": []
+  },
+  "Vic": {
+    "2026": [
+      {
+        "name": "New Year's Day",
+        "date": "2026-01-01"
+      },
+      {
+        "name": "Australia Day",
+        "date": "2026-01-26"
+      },
+      {
+        "name": "Labour Day",
+        "date": "2026-03-09"
+      },
+      {
+        "name": "Good Friday",
+        "date": "2026-04-03"
+      },
+      {
+        "name": "Holy Saturday",
+        "date": "2026-04-04"
+      },
+      {
+        "name": "Easter Sunday",
+        "date": "2026-04-05"
+      },
+      {
+        "name": "Easter Monday",
+        "date": "2026-04-06"
+      },
+      {
+        "name": "Anzac Day",
+        "date": "2026-04-25"
+      },
+      {
+        "name": "King's Official Birthday",
+        "date": "2026-06-08"
+      },
+      {
+        "name": "Friday before the AFL Grand Final",
+        "date": "2026-09-25"
+      },
+      {
+        "name": "Melbourne Cup",
+        "date": "2026-11-03"
+      },
+      {
+        "name": "Christmas Day",
+        "date": "2026-12-25"
+      },
+      {
+        "name": "Boxing Day",
+        "date": "2026-12-28"
+      }
+    ]
+  },
+  "Nsw": {
+    "2026": [
+      {
+        "name": "New Year's Day",
+        "date": "2026-01-01"
+      },
+      {
+        "name": "Australia Day",
+        "date": "2026-01-26"
+      },
+      {
+        "name": "Good Friday",
+        "date": "2026-04-03"
+      },
+      {
+        "name": "Holy Saturday",
+        "date": "2026-04-04"
+      },
+      {
+        "name": "Easter Sunday",
+        "date": "2026-04-05"
+      },
+      {
+        "name": "Easter Monday",
+        "date": "2026-04-06"
+      },
+      {
+        "name": "Anzac Day",
+        "date": "2026-04-25"
+      },
+      {
+        "name": "King's Official Birthday",
+        "date": "2026-06-08"
+      },
+      {
+        "name": "Labour Day",
+        "date": "2026-10-05"
+      },
+      {
+        "name": "Christmas Day",
+        "date": "2026-12-25"
+      },
+      {
+        "name": "Boxing Day",
+        "date": "2026-12-28"
+      }
+    ]
+  },
+  "Qld": {
+    "2026": [
+      {
+        "name": "New Year's Day",
+        "date": "2026-01-01"
+      },
+      {
+        "name": "Australia Day",
+        "date": "2026-01-26"
+      },
+      {
+        "name": "Good Friday",
+        "date": "2026-04-03"
+      },
+      {
+        "name": "Holy Saturday",
+        "date": "2026-04-04"
+      },
+      {
+        "name": "Easter Sunday",
+        "date": "2026-04-05"
+      },
+      {
+        "name": "Easter Monday",
+        "date": "2026-04-06"
+      },
+      {
+        "name": "Anzac Day",
+        "date": "2026-04-25"
+      },
+      {
+        "name": "Labour Day",
+        "date": "2026-05-04"
+      },
+      {
+        "name": "King's Official Birthday",
+        "date": "2026-10-05"
+      },
+      {
+        "name": "Christmas Eve",
+        "date": "2026-12-24"
+      },
+      {
+        "name": "Christmas Day",
+        "date": "2026-12-25"
+      },
+      {
+        "name": "Boxing Day",
+        "date": "2026-12-28"
+      }
+    ]
+  },
+  "Bengaluru": {
+    "2026": [
+      {
+        "name": "New Year's Day",
+        "date": "2026-01-01"
+      },
+      {
+        "name": "Makara Sankranthi",
+        "date": "2026-01-15"
+      },
+      {
+        "name": "Republic Day",
+        "date": "2026-01-26"
+      },
+      {
+        "name": "Ugadi",
+        "date": "2026-03-19"
+      },
+      {
+        "name": "Good Friday",
+        "date": "2026-04-03"
+      },
+      {
+        "name": "May Day",
+        "date": "2026-05-01"
+      },
+      {
+        "name": "Bakrid",
+        "date": "2026-05-28"
+      },
+      {
+        "name": "Ganesha Chathurthi",
+        "date": "2026-09-14"
+      },
+      {
+        "name": "Gandhi Jayanti",
+        "date": "2026-10-02"
+      },
+      {
+        "name": "Ayudha Pooja",
+        "date": "2026-10-20"
+      },
+      {
+        "name": "Balipadyami, Deepavali",
+        "date": "2026-11-10"
+      },
+      {
+        "name": "Christmas",
+        "date": "2026-12-25"
+      }
+    ]
+  }
+}
