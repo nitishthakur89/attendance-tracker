@@ -702,7 +702,7 @@ function App() {
         </div>
         <div className="header-controls">
           <div className="location-selector">
-            <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)}>
+            <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)} title="Select location">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
@@ -729,13 +729,13 @@ function App() {
               </div>
             )}
           </div>
-          <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+          <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title="Select theme">
             <div className={`theme-toggle ${theme}`}>
               <div className="theme-toggle-circle">
                 {theme === 'light' ? '🌙' : '☀️'}
               </div>
             </div>
-            <span className="theme-label">{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
+           
           </div>
         </div>
         <div className="motivation-emoji">{motivationalData.emoji}</div>
