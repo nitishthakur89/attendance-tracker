@@ -1536,7 +1536,7 @@ body {
   }
 
   .calendar-nav {
-    flex-direction: column;
+   
     gap: 12px;
     text-align: center;
     min-width: unset;
