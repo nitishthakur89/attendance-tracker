@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import publicHolidays from './publicHolidays.json';
 
 function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -13,6 +14,11 @@ function App() {
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStatus, setDragStatus] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(() => {
+    const savedRegion = localStorage.getItem('selectedRegion');
+    return savedRegion || 'Vic';
+  });
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('attendance', JSON.stringify(attendance));
@@ -22,6 +28,54 @@ function App() {
     localStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedRegion', selectedRegion);
+  }, [selectedRegion]);
+
+  // Automatically mark public holidays as holiday status
+  useEffect(() => {
+    const updatedAttendance = { ...attendance };
+
+    // Get all public holiday dates from ALL regions
+    const allPublicHolidayDates = new Set();
+    Object.keys(publicHolidays).forEach(region => {
+      const holidays = publicHolidays[region]?.['2026'] || [];
+      holidays.forEach(holiday => {
+        allPublicHolidayDates.add(holiday.date);
+      });
+    });
+
+    // Remove all holidays that match ANY public holiday date from ALL regions
+    Object.keys(updatedAttendance).forEach(dateKey => {
+      if (updatedAttendance[dateKey] === 'holiday') {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // If this holiday date matches any public holiday in any region, remove it
+        if (allPublicHolidayDates.has(dateString)) {
+          delete updatedAttendance[dateKey];
+        }
+      }
+    });
+
+    // Now add the current region's holidays
+    const regionHolidays = publicHolidays[selectedRegion]?.['2026'] || [];
+    regionHolidays.forEach(holiday => {
+      const [year, month, day] = holiday.date.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      // Only mark as holiday if it's not a weekend
+      if (!isWeekend) {
+        const dateKey = `${year}-${month - 1}-${day}`;
+        updatedAttendance[dateKey] = 'holiday';
+      }
+    });
+
+    setAttendance(updatedAttendance);
+  }, [selectedRegion]);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -70,6 +124,10 @@ function App() {
   const handleMouseDown = (day) => {
     if (isWeekend(day)) return;
 
+    // Also prevent dragging on public holidays
+    const publicHolidayName = getPublicHolidayName(day, currentDate.getMonth(), currentDate.getFullYear());
+    if (publicHolidayName) return;
+
     const currentStatus = getAttendanceStatus(day);
     setIsDragging(true);
     setDragStatus(currentStatus);
@@ -78,12 +136,28 @@ function App() {
   const handleMouseEnter = (day) => {
     if (!isDragging || isWeekend(day)) return;
 
+    // Also skip public holidays during drag
+    const publicHolidayName = getPublicHolidayName(day, currentDate.getMonth(), currentDate.getFullYear());
+    if (publicHolidayName) return;
+
     markAttendance(day, dragStatus);
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
     setDragStatus(null);
+  };
+
+  const getPublicHolidayName = (day, month, year) => {
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const regionHolidays = publicHolidays[selectedRegion]?.['2026'] || [];
+    const holiday = regionHolidays.find(h => h.date === dateString);
+    return holiday?.name || null;
+  };
+
+  const handleRegionSelect = (region) => {
+    setSelectedRegion(region);
+    setShowLocationDropdown(false);
   };
 
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
@@ -119,11 +193,13 @@ function App() {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const status = getAttendanceStatus(day);
+      const publicHolidayName = getPublicHolidayName(day, month, year);
       const today = new Date();
       const isToday = today.getDate() === day &&
                       today.getMonth() === month &&
                       today.getFullYear() === year;
       const weekend = isWeekend(day);
+      const isPublicHoliday = publicHolidayName !== null;
 
       const currentDate = new Date(year, month, day);
       const todayDate = new Date();
@@ -132,19 +208,28 @@ function App() {
       const isFuture = currentDate > todayDate;
       const isPlanned = isFuture && status === 'office';
 
+      // Public holidays are non-editable like weekends
+      const isNonEditable = weekend || isPublicHoliday;
+
       days.push(
         <div
           key={day}
-          className={`calendar-day ${isToday ? 'today' : ''} ${weekend ? 'weekend' : ''} ${status ? `has-${status}` : ''} ${isPlanned ? 'planned-office' : ''} ${!weekend ? 'clickable' : ''}`}
-          onClick={() => !weekend && cycleAttendance(day)}
-          onMouseDown={() => !weekend && handleMouseDown(day)}
+          className={`calendar-day ${isToday ? 'today' : ''} ${weekend ? 'weekend' : ''} ${status ? `has-${status}` : ''} ${isPublicHoliday ? 'public-holiday' : ''} ${isPlanned ? 'planned-office' : ''} ${!isNonEditable ? 'clickable' : ''}`}
+          onClick={() => !isNonEditable && cycleAttendance(day)}
+          onMouseDown={() => !isNonEditable && handleMouseDown(day)}
           onMouseEnter={() => handleMouseEnter(day)}
           onMouseUp={handleMouseUp}
-          title={!weekend ? (isPlanned ? 'Planned Office Day - Click to change or drag to apply to multiple dates' : 'Click to cycle: Office → Holiday → None, or drag to apply to multiple dates') : ''}
+          title={isPublicHoliday ? `Public Holiday: ${publicHolidayName}` : (!weekend ? (isPlanned ? 'Planned Office Day - Click to change or drag to apply to multiple dates' : 'Click to cycle: Office → Holiday → None, or drag to apply to multiple dates') : '')}
         >
           <div className="day-content">
             <div className="day-number">{day}</div>
-            {status && !weekend && (
+            {isPublicHoliday && (
+              <div className="holiday-info">
+                <div className="holiday-icon">🌴</div>
+                <div className="holiday-name">{publicHolidayName}</div>
+              </div>
+            )}
+            {!isPublicHoliday && status && !weekend && (
               <div className={`status-icon ${status}`}>
                 {status === 'office' && (isPlanned ? '📅' : '🏢')}
                 {status === 'holiday' && '🌴'}
@@ -373,8 +458,16 @@ function App() {
       monthsWithData.add(`${year}-${month}`);
     });
 
-    // Sort the months
-    const sortedMonths = Array.from(monthsWithData).sort();
+    // Sort the months by year and month numerically
+    const sortedMonths = Array.from(monthsWithData).sort((a, b) => {
+      const [yearA, monthA] = a.split('-').map(Number);
+      const [yearB, monthB] = b.split('-').map(Number);
+
+      if (yearA !== yearB) {
+        return yearA - yearB;
+      }
+      return monthA - monthB;
+    });
 
     // Calculate monthly statistics
     const monthlyStats = [];
@@ -598,13 +691,52 @@ function App() {
   return (
     <div className="app" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
       <header className={`motivational-header ${motivationalData.color}`}>
-        <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-          <div className={`theme-toggle ${theme}`}>
-            <div className="theme-toggle-circle">
-              {theme === 'light' ? '🌙' : '☀️'}
+        <div className="developer-info">
+          <span className="developer-label">Developer : Nitish Thakur</span>
+          <a href="mailto:nitish.thakur89@gmail.com" className="email-icon" title="Email: nitish.thakur89@gmail.com">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </a>
+        </div>
+        <div className="header-controls">
+          <div className="location-selector">
+            <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span className="location-label">{selectedRegion}</span>
             </div>
+            {showLocationDropdown && (
+              <div className="location-dropdown">
+                <div className="location-option" onClick={() => handleRegionSelect('None')}>
+                  No Location
+                </div>
+                <div className="location-option" onClick={() => handleRegionSelect('Vic')}>
+                  Victoria
+                </div>
+                <div className="location-option" onClick={() => handleRegionSelect('Nsw')}>
+                  NSW
+                </div>
+                <div className="location-option" onClick={() => handleRegionSelect('Qld')}>
+                  Queensland
+                </div>
+                <div className="location-option" onClick={() => handleRegionSelect('Bengaluru')}>
+                  Bengaluru
+                </div>
+              </div>
+            )}
           </div>
-          <span className="theme-label">{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
+          <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+            <div className={`theme-toggle ${theme}`}>
+              <div className="theme-toggle-circle">
+                {theme === 'light' ? '🌙' : '☀️'}
+              </div>
+            </div>
+            <span className="theme-label">{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
+          </div>
         </div>
         <div className="motivation-emoji">{motivationalData.emoji}</div>
         <div className="motivation-content">
