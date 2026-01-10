@@ -44,7 +44,7 @@ body {
 .app {
   min-height: 100vh;
   padding: 24px;
-  padding-top: 110px;
+  padding-top: 134px;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
@@ -210,7 +210,6 @@ body {
 .logo-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 12px 24px;
   display: grid;
   grid-template-columns: 200px 1fr auto;
   align-items: center;
@@ -218,7 +217,7 @@ body {
 }
 
 .logo-image {
-  height: 80px;
+  height: 123px;
   width: auto;
   object-fit: contain;
   transition: transform 0.3s ease;
@@ -1590,17 +1589,17 @@ body {
 
   .app {
     padding: 12px;
-    padding-top: 95px;
+    padding-top: 111px;
   }
 
   .logo-content {
-    padding: 10px 16px;
+    padding: 6px 16px 6px 16px;
     grid-template-columns: auto 1fr auto;
     gap: 12px;
   }
 
   .logo-image {
-    height: 60px;
+    height: 78px;
   }
 
   .logo-motivation {
@@ -1815,17 +1814,17 @@ body {
 @media (max-width: 480px) {
   .app {
     padding: 8px;
-    padding-top: 85px;
+    padding-top: 100px;
   }
 
   .logo-content {
-    padding: 8px 12px;
+    padding: 5px 12px 5px 12px;
     grid-template-columns: auto 1fr auto;
     gap: 8px;
   }
 
   .logo-image {
-    height: 50px;
+    height: 65px;
   }
 
   .logo-motivation {
