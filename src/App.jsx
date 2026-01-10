@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import publicHolidays from './publicHolidays.json';
+import logo from './assets/logo.png';
 
 function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -19,6 +20,10 @@ function App() {
     return savedRegion || 'Vic';
   });
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    return !hasSeenWelcome;
+  });
 
   useEffect(() => {
     localStorage.setItem('attendance', JSON.stringify(attendance));
@@ -158,6 +163,11 @@ function App() {
   const handleRegionSelect = (region) => {
     setSelectedRegion(region);
     setShowLocationDropdown(false);
+  };
+
+  const handleCloseWelcome = () => {
+    localStorage.setItem('hasSeenWelcome', 'true');
+    setShowWelcomeMessage(false);
   };
 
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
@@ -469,11 +479,22 @@ function App() {
       return monthA - monthB;
     });
 
+    // Filter out future months
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    const filteredMonths = sortedMonths.filter(yearMonth => {
+      const [year, month] = yearMonth.split('-').map(Number);
+      // Only include months that are in the past or current month
+      if (year < currentYear) return true;
+      if (year === currentYear && month <= currentMonth) return true;
+      return false;
+    });
+
     // Calculate monthly statistics
     const monthlyStats = [];
 
-    // Export all months with data
-    sortedMonths.forEach(yearMonth => {
+    // Export all months with data (excluding future months)
+    filteredMonths.forEach(yearMonth => {
       const [year, month] = yearMonth.split('-').map(Number);
       const lastDay = new Date(year, month + 1, 0).getDate();
 
@@ -690,17 +711,54 @@ function App() {
 
   return (
     <div className="app" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
-      <header className={`motivational-header ${motivationalData.color}`}>
-        <div className="developer-info">
-          <span className="developer-label">Developer : Nitish Thakur</span>
-          <a href="mailto:nitish.thakur89@gmail.com" className="email-icon" title="Email: nitish.thakur89@gmail.com">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-          </a>
+      {showWelcomeMessage && (
+        <div className="welcome-overlay" onClick={handleCloseWelcome}>
+          <div className="welcome-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="welcome-header">
+              <h2>Welcome to InOffice Attendance!</h2>
+              <button className="close-button" onClick={handleCloseWelcome}>&times;</button>
+            </div>
+            <div className="welcome-content">
+              <div className="welcome-icon">📍</div>
+              <p className="welcome-message">
+                Your default location is set to <strong>Victoria, Australia</strong>.
+              </p>
+              <p className="welcome-info">
+                You can change your location anytime using the location selector at the top right.
+                If your location isn't in the list, simply select <strong>"No Location"</strong> to use the app without region-specific public holidays.
+              </p>
+              <button className="welcome-button" onClick={handleCloseWelcome}>
+                Got it, let's start!
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="header-controls">
+      )}
+      <div className="app-logo">
+        <div className="logo-content">
+          <img src={logo} alt="InOffice Attendance" className="logo-image" />
+          <div className="logo-motivation">
+            <span className="logo-motivation-emoji">{motivationalData.emoji}</span>
+            <span className="logo-motivation-text">{motivationalData.message}</span>
+          </div>
+          <div className="header-controls">
+          <div className="progress-section">
+            <div className="progress-month-name">{monthNames[new Date().getMonth()]}</div>
+            <div className="progress-labels">
+              <div className="progress-current-group">
+                <span className="progress-emoji">{motivationalData.progressEmoji}</span>
+                <span className="progress-current">{currentRate.rate}%</span>
+              </div>
+              <span className="progress-target">Target: 50%</span>
+            </div>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${Math.min(parseFloat(currentRate.rate), 100)}%` }}
+              />
+              <div className="target-marker" style={{ left: '50%' }} />
+            </div>
+          </div>
           <div className="location-selector">
             <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)} title="Select location">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -735,32 +793,10 @@ function App() {
                 {theme === 'light' ? '🌙' : '☀️'}
               </div>
             </div>
-           
+          </div>
           </div>
         </div>
-        <div className="motivation-emoji">{motivationalData.emoji}</div>
-        <div className="motivation-content">
-          <h1 className="motivation-message">{motivationalData.message}</h1>
-        </div>
-        <div className="progress-section">
-          <div className="progress-month-name">{monthNames[new Date().getMonth()]}</div>
-          <div className="progress-labels">
-            <div className="progress-current-group">
-              <span className="progress-emoji">{motivationalData.progressEmoji}</span>
-              <span className="progress-current">{currentRate.rate}%</span>
-            </div>
-            <span className="progress-target">Target: 50%</span>
-          </div>
-          <div className="progress-bar-container">
-            <div
-              className="progress-bar-fill"
-              style={{ width: `${Math.min(parseFloat(currentRate.rate), 100)}%` }}
-            />
-            <div className="target-marker" style={{ left: '50%' }} />
-          </div>
-        </div>
-      </header>
-
+      </div>
       <div className="container">
         <div className="sidebar">
           <div className="stats-section">
@@ -882,6 +918,18 @@ function App() {
           </div>
         </div>
       </div>
+
+      <footer className="developer-footer">
+        <div className="developer-info">
+          <span className="developer-label">Developer : Nitish Thakur</span>
+          <a href="mailto:nitish.thakur89@gmail.com" className="email-icon" title="Email: nitish.thakur89@gmail.com">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
