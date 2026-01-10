@@ -902,7 +902,7 @@ function App() {
               <span>Holiday/Leave</span>
             </div>
             <div className="legend-note">
-              💡 Click on any date to mark attendance • Drag across dates to apply same status • Export All Data exports all months
+              💡 Click on any date to mark attendance • Drag across dates to apply same status • Export attendance
             </div>
           </div>
 
