@@ -557,6 +557,33 @@ body {
   color: #9ca3af;
 }
 
+[data-theme="dark"] .trend-month {
+  color: #f3f4f6;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .trend-percent {
+  color: #f3f4f6;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .compact-trend {
+  border-top-color: #374151;
+}
+
+[data-theme="dark"] .compact-trend h4 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .trend-bars {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .trend-bar-mini {
+  background: #374151;
+}
+
 .progress-labels {
   display: flex;
   justify-content: space-between;
@@ -1624,6 +1651,10 @@ body {
     display: none;
   }
 
+  .location-toggle {
+    padding: 6px 10px;
+  }
+
   .location-label {
     display: none;
   }
@@ -1849,9 +1880,17 @@ body {
     display: none;
   }
 
+  .location-toggle {
+    padding: 6px 8px;
+  }
+
   .location-toggle svg {
     width: 18px;
     height: 18px;
+  }
+
+  .location-label {
+    display: none;
   }
 
   .developer-footer {
