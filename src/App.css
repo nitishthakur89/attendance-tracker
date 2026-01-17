@@ -298,6 +298,29 @@ body {
   transform: scale(1.15);
 }
 
+.linkedin-icon {
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  color: #0077B5;
+}
+
+.linkedin-icon svg {
+  width: 18px;
+  height: 18px;
+  transition: all 0.3s ease;
+}
+
+.linkedin-icon:hover {
+  color: #005885;
+}
+
+.linkedin-icon:hover svg {
+  transform: scale(1.15);
+}
+
 .header-controls {
   display: flex;
   align-items: center;
@@ -364,19 +387,23 @@ body {
 }
 
 .theme-switch-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
+  z-index: 10;
 }
 
 .theme-toggle {
   position: relative;
-  width: 60px;
-  height: 28px;
+  width: 40px;
+  height: 20px;
   background: #e5e7eb;
-  border-radius: 14px;
-  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  border: 1.5px solid #d1d5db;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -389,15 +416,15 @@ body {
 
 .theme-toggle-circle {
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   top: 1px;
-  left: 2px;
+  left: 1.5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 8px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   background: #6b7280;
@@ -407,7 +434,7 @@ body {
 .theme-toggle.dark .theme-toggle-circle {
   background: white;
   color: #f59e0b;
-  transform: translateX(32px);
+  transform: translateX(20px);
 }
 
 .theme-label {
@@ -724,6 +751,41 @@ body {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
+.progress-message {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+  animation: slideInUp 0.4s ease;
+}
+
+.progress-message.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+[data-theme="dark"] .progress-message.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.progress-message.plan-needed {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .progress-message.plan-needed {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -970,14 +1032,26 @@ body {
 
 .stat-item.combined-percentage {
   grid-column: 1 / -1;
-  background: #10b981;
   color: white;
   border: none;
 }
 
-.stat-item.combined-percentage:hover {
+.stat-item.combined-percentage.success {
+  background: #10b981;
+}
+
+.stat-item.combined-percentage.success:hover {
   background: #059669;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.stat-item.combined-percentage.danger {
+  background: #f37171;
+}
+
+.stat-item.combined-percentage.danger:hover {
+  background: #e85555;
+  box-shadow: 0 4px 12px rgba(243, 113, 113, 0.2);
 }
 
 .stat-label {
@@ -1660,18 +1734,18 @@ body {
   }
 
   .theme-toggle {
-    width: 50px;
-    height: 24px;
+    width: 36px;
+    height: 18px;
   }
 
   .theme-toggle-circle {
-    width: 18px;
-    height: 18px;
-    font-size: 8px;
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
   }
 
   .theme-toggle.dark .theme-toggle-circle {
-    transform: translateX(26px);
+    transform: translateX(18px);
   }
 
   .developer-footer {
