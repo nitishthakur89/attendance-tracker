@@ -307,25 +307,10 @@ function App() {
     const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     let actualOffice = 0;
+    let plannedOffice = 0;
     let totalWorkingDays = 0;
 
-    // Count actual office days (excluding planned future days)
-    for (let day = 1; day <= today.getDate(); day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const dayOfWeek = date.getDay();
-      const isWeekendDay = dayOfWeek === 0 || dayOfWeek === 6;
-
-      if (!isWeekendDay) {
-        const dateKey = `${currentYear}-${currentMonth}-${day}`;
-        const status = attendance[dateKey];
-
-        if (status === 'office') {
-          actualOffice++;
-        }
-      }
-    }
-
-    // Count total working days for the entire month
+    // Count all office days (actual and planned)
     for (let day = 1; day <= lastDay; day++) {
       const date = new Date(currentYear, currentMonth, day);
       const dayOfWeek = date.getDay();
@@ -338,12 +323,34 @@ function App() {
         if (status !== 'holiday') {
           totalWorkingDays++;
         }
+
+        if (status === 'office') {
+          const dayDate = new Date(currentYear, currentMonth, day);
+          dayDate.setHours(0, 0, 0, 0);
+          const todayDate = new Date(today);
+          todayDate.setHours(0, 0, 0, 0);
+
+          if (dayDate > todayDate) {
+            plannedOffice++;
+          } else {
+            actualOffice++;
+          }
+        }
       }
     }
 
+    const totalOffice = actualOffice + plannedOffice;
     const rate = totalWorkingDays > 0 ? ((actualOffice / totalWorkingDays) * 100) : 0;
+    const combinedRate = totalWorkingDays > 0 ? ((totalOffice / totalWorkingDays) * 100) : 0;
 
-    return { rate: rate.toFixed(1), actual: actualOffice, total: totalWorkingDays };
+    return {
+      rate: rate.toFixed(1),
+      actual: actualOffice,
+      planned: plannedOffice,
+      total: totalWorkingDays,
+      totalOffice: totalOffice,
+      combinedRate: combinedRate.toFixed(1)
+    };
   };
 
   const currentRate = getCurrentOfficeRate();
@@ -352,6 +359,10 @@ function App() {
     const rate = parseFloat(currentRate.rate);
     const today = new Date();
     const currentMonthName = monthNames[today.getMonth()];
+
+    // Calculate days needed to reach 50%
+    const targetDays = currentRate.total / 2;
+    const daysNeeded = Math.ceil(targetDays - currentRate.actual);
 
     if (rate === 0) {
       return {
@@ -369,9 +380,10 @@ function App() {
         progressEmoji: "😎",
         color: "success"
       };
-    } else if (rate >= 40) {
+    } else if (rate >= 35) {
+      const dayWord = daysNeeded === 1 ? 'day' : 'days';
       return {
-        message: `Almost there! ${currentRate.rate}% in ${currentMonthName}. Just ${(50 - rate).toFixed(1)}% more to hit 50%!`,
+        message: `Almost there! ${currentRate.rate}% in ${currentMonthName}. Just ${daysNeeded} more ${dayWord} to hit 50%!`,
         emoji: "💪",
         progressEmoji: "😊",
         color: "warning"
@@ -758,6 +770,28 @@ function App() {
               />
               <div className="target-marker" style={{ left: '50%' }} />
             </div>
+            {(() => {
+              const targetDays = currentRate.total / 2; // 50% of working days
+              const totalPlannedAndActual = currentRate.totalOffice;
+              const daysNeededToReach50 = Math.ceil(targetDays - totalPlannedAndActual);
+              const combinedRate = parseFloat(currentRate.combinedRate);
+
+              if (combinedRate >= 50) {
+                return (
+                  <div className="progress-message success">
+                    Good! You have planned your days wisely.
+                  </div>
+                );
+              } else if (daysNeededToReach50 > 0) {
+                const dayWord = daysNeededToReach50 === 1 ? 'day' : 'days';
+                return (
+                  <div className="progress-message plan-needed">
+                    Plan {daysNeededToReach50} more {dayWord} to reach 50% target 📅
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
           <div className="location-selector">
             <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)} title="Select location">
@@ -787,13 +821,13 @@ function App() {
               </div>
             )}
           </div>
-          <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title="Select theme">
-            <div className={`theme-toggle ${theme}`}>
-              <div className="theme-toggle-circle">
-                {theme === 'light' ? '🌙' : '☀️'}
-              </div>
-            </div>
           </div>
+        </div>
+        <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title="Select theme">
+          <div className={`theme-toggle ${theme}`}>
+            <div className="theme-toggle-circle">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </div>
           </div>
         </div>
       </div>
@@ -812,14 +846,8 @@ function App() {
               </div>
               {isCurrentOrFutureMonth() && (
                 <div className="stat-item">
-                  <span className="stat-label">PLANNED OFFICE DAYS:</span>
+                  <span className="stat-label">PLANNED OFFICE DAYS (future) :</span>
                   <span className="stat-value">{stats.plannedOffice}</span>
-                </div>
-              )}
-              {isCurrentOrFutureMonth() && (
-                <div className="stat-item">
-                  <span className="stat-label">PLANNED + ACTUAL Days:</span>
-                  <span className="stat-value">{stats.totalOffice}</span>
                 </div>
               )}
               <div className="stat-item">
@@ -839,7 +867,7 @@ function App() {
                 </div>
               </div>
               {isCurrentOrFutureMonth() && (
-                <div className="stat-item combined-percentage">
+                <div className={`stat-item combined-percentage ${parseFloat(stats.totalOfficePercentage) >= 50 ? 'success' : 'danger'}`}>
                   <span className="stat-label">PLANNED + ACTUAL DAYS %:</span>
                   <span className="stat-value">{stats.totalOfficePercentage}%</span>
                 </div>
@@ -926,6 +954,11 @@ function App() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </a>
+          <a href="https://www.linkedin.com/in/nitish-thakur27/" className="linkedin-icon" target="_blank" rel="noopener noreferrer" title="LinkedIn: Nitish Thakur">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
             </svg>
           </a>
         </div>
