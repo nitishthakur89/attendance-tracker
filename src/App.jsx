@@ -47,6 +47,19 @@ function App() {
     localStorage.setItem('targetPercentage', targetPercentage.toString());
   }, [targetPercentage]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showSettingsPanel && !event.target.closest('.header-right-section')) {
+        setShowSettingsPanel(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSettingsPanel]);
+
   // Automatically mark public holidays as holiday status
   useEffect(() => {
     const updatedAttendance = { ...attendance };
@@ -172,6 +185,17 @@ function App() {
   const handleRegionSelect = (region) => {
     setSelectedRegion(region);
     setShowLocationDropdown(false);
+  };
+
+  const handleSettingsToggle = () => {
+    setShowSettingsPanel(!showSettingsPanel);
+    if (!showSettingsPanel) {
+      setShowLocationDropdown(false); // Close location dropdown when opening settings
+    }
+  };
+
+  const handleLocationToggle = () => {
+    setShowLocationDropdown(!showLocationDropdown);
   };
 
   const handleCloseWelcome = () => {
@@ -780,7 +804,7 @@ function App() {
                 className="progress-bar-fill"
                 style={{ width: `${Math.min(parseFloat(currentRate.rate), 100)}%` }}
               />
-              <div className="target-marker" style={{ left: `${targetPercentage}%` }} />x
+              <div className="target-marker" style={{ left: `${targetPercentage}%` }} />
             </div>
             {(() => {
               const targetDays = (currentRate.total * targetPercentage) / 100;
@@ -805,79 +829,80 @@ function App() {
               return null;
             })()}
           </div>
-          <div className="location-selector">
-            <div className="location-toggle" onClick={() => setShowLocationDropdown(!showLocationDropdown)} title="Select location">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span className="location-label">{selectedRegion}</span>
-            </div>
-            {showLocationDropdown && (
-              <div className="location-dropdown">
-                <div className="location-option" onClick={() => handleRegionSelect('None')}>
-                  No Location
-                </div>
-                <div className="location-option" onClick={() => handleRegionSelect('Vic')}>
-                  Victoria
-                </div>
-                <div className="location-option" onClick={() => handleRegionSelect('Nsw')}>
-                  NSW
-                </div>
-                <div className="location-option" onClick={() => handleRegionSelect('Qld')}>
-                  Queensland
-                </div>
-                <div className="location-option" onClick={() => handleRegionSelect('Bengaluru')}>
-                  Bengaluru
-                </div>
-              </div>
-            )}
-          </div>
           </div>
         </div>
-        <div className="settings-icon-wrapper" onClick={() => setShowSettingsPanel(!showSettingsPanel)} title="Settings">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </div>
-        {showSettingsPanel && (
-          <div className="settings-panel">
-            <div className="settings-header">
-              <h3>Settings</h3>
-              <button className="settings-close" onClick={() => setShowSettingsPanel(false)}>&times;</button>
-            </div>
-            <div className="settings-content">
-              <div className="setting-item">
-                <label className="setting-label">Theme</label>
-                <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-                  <div className={`theme-toggle ${theme}`}>
-                    <div className="theme-toggle-circle">
-                      {theme === 'light' ? '🌙' : '☀️'}
+        <div className="header-right-section">
+          <div className="settings-icon-wrapper" onClick={handleSettingsToggle} title="Settings">
+            <svg className="settings-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          {showSettingsPanel && (
+            <div className="settings-panel">
+              <div className="settings-content">
+                <div className="setting-item theme-setting">
+                  <label className="setting-label">Theme</label>
+                  <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+                    <div className={`theme-toggle ${theme}`}>
+                      <div className="theme-toggle-circle">
+                        {theme === 'light' ? '🌙' : '☀️'}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="setting-item">
-                <label className="setting-label">Target Office Percentage: {targetPercentage}%</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={targetPercentage}
-                  onChange={(e) => setTargetPercentage(parseInt(e.target.value))}
-                  className="target-slider"
-                />
-                <div className="slider-labels">
-                  <span>10%</span>
-                  <span>50%</span>
-                  <span>100%</span>
+                <div className="setting-item theme-setting">
+                  <label className="setting-label">Location</label>
+                  <div className="location-selector-inline">
+                    <div className="location-toggle-inline" onClick={handleLocationToggle}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span className="location-label-inline">{selectedRegion}</span>
+                    </div>
+                    {showLocationDropdown && (
+                      <div className="location-dropdown-inline">
+                        <div className="location-option" onClick={() => handleRegionSelect('None')}>
+                          No Location
+                        </div>
+                        <div className="location-option" onClick={() => handleRegionSelect('Vic')}>
+                          Victoria
+                        </div>
+                        <div className="location-option" onClick={() => handleRegionSelect('Nsw')}>
+                          NSW
+                        </div>
+                        <div className="location-option" onClick={() => handleRegionSelect('Qld')}>
+                          Queensland
+                        </div>
+                        <div className="location-option" onClick={() => handleRegionSelect('Bengaluru')}>
+                          Bengaluru
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="setting-item">
+                  <label className="setting-label">🎯 Set Office Target: {targetPercentage}%</label>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="5"
+                    value={targetPercentage}
+                    onChange={(e) => setTargetPercentage(parseInt(e.target.value))}
+                    className="target-slider"
+                  />
+                  <div className="slider-labels">
+                    <span>10%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <div className="container">
         <div className="sidebar">
