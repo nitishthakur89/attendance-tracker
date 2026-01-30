@@ -24,11 +24,6 @@ function App() {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
     return !hasSeenWelcome;
   });
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [targetPercentage, setTargetPercentage] = useState(() => {
-    const savedTarget = localStorage.getItem('targetPercentage');
-    return savedTarget ? parseInt(savedTarget) : 50; // Default is 50% for existing users
-  });
 
   useEffect(() => {
     localStorage.setItem('attendance', JSON.stringify(attendance));
@@ -42,10 +37,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem('selectedRegion', selectedRegion);
   }, [selectedRegion]);
-
-  useEffect(() => {
-    localStorage.setItem('targetPercentage', targetPercentage.toString());
-  }, [targetPercentage]);
 
   // Automatically mark public holidays as holiday status
   useEffect(() => {
@@ -369,44 +360,44 @@ function App() {
     const today = new Date();
     const currentMonthName = monthNames[today.getMonth()];
 
-    // Calculate days needed to reach target%
-    const targetDays = (currentRate.total * targetPercentage) / 100;
+    // Calculate days needed to reach 50%
+    const targetDays = currentRate.total / 2;
     const daysNeeded = Math.ceil(targetDays - currentRate.actual);
 
     if (rate === 0) {
       return {
-        message: `Let's start marking your office days! Goal: ${targetPercentage}% (${currentMonthName})`,
+        message: `Let's start marking your office days! Goal: 50% (${currentMonthName})`,
         emoji: "🚀",
         progressEmoji: "😐",
         color: "neutral"
       };
     }
 
-    if (rate >= targetPercentage) {
+    if (rate >= 50) {
       return {
         message: `Amazing! You're at ${currentRate.rate}% office attendance in ${currentMonthName}! Target is achieved! Keep it up! 🎉`,
         emoji: "🌟",
         progressEmoji: "😎",
         color: "success"
       };
-    } else if (rate >= targetPercentage - 15) {
+    } else if (rate >= 35) {
       const dayWord = daysNeeded === 1 ? 'day' : 'days';
       return {
-        message: `Almost there! ${currentRate.rate}% in ${currentMonthName}. Just ${daysNeeded} more ${dayWord} to hit ${targetPercentage}%!`,
+        message: `Almost there! ${currentRate.rate}% in ${currentMonthName}. Just ${daysNeeded} more ${dayWord} to hit 50%!`,
         emoji: "💪",
         progressEmoji: "😊",
         color: "warning"
       };
-    } else if (rate >= targetPercentage - 30) {
+    } else if (rate >= 20) {
       return {
-        message: `Keep going! At ${currentRate.rate}% in ${currentMonthName}. You can reach ${targetPercentage}%!`,
+        message: `Keep going! At ${currentRate.rate}% in ${currentMonthName}. You can reach 50%!`,
         emoji: "📈",
         progressEmoji: "😐",
         color: "info"
       };
     } else {
       return {
-        message: `Let's boost it up! Currently at ${currentRate.rate}% in ${currentMonthName}. Target: ${targetPercentage}%`,
+        message: `Let's boost it up! Currently at ${currentRate.rate}% in ${currentMonthName}. Target: 50%`,
         emoji: "🎯",
         progressEmoji: "😢",
         color: "info"
@@ -748,9 +739,6 @@ function App() {
                 You can change your location anytime using the location selector at the top right.
                 If your location isn't in the list, simply select <strong>"No Location"</strong> to use the app without region-specific public holidays.
               </p>
-              <p className="welcome-info">
-                Your default office attendance target is set to <strong>50%</strong>. You can customize this anytime by clicking the <strong>⚙️ Settings</strong> icon at the top right corner.
-              </p>
               <button className="welcome-button" onClick={handleCloseWelcome}>
                 Got it, let's start!
               </button>
@@ -773,32 +761,32 @@ function App() {
                 <span className="progress-emoji">{motivationalData.progressEmoji}</span>
                 <span className="progress-current">{currentRate.rate}%</span>
               </div>
-              <span className="progress-target">Target: {targetPercentage}%</span>
+              <span className="progress-target">Target: 50%</span>
             </div>
             <div className="progress-bar-container">
               <div
                 className="progress-bar-fill"
                 style={{ width: `${Math.min(parseFloat(currentRate.rate), 100)}%` }}
               />
-              <div className="target-marker" style={{ left: `${targetPercentage}%` }} />x
+              <div className="target-marker" style={{ left: '50%' }} />
             </div>
             {(() => {
-              const targetDays = (currentRate.total * targetPercentage) / 100;
+              const targetDays = currentRate.total / 2; // 50% of working days
               const totalPlannedAndActual = currentRate.totalOffice;
-              const daysNeededToReachTarget = Math.ceil(targetDays - totalPlannedAndActual);
+              const daysNeededToReach50 = Math.ceil(targetDays - totalPlannedAndActual);
               const combinedRate = parseFloat(currentRate.combinedRate);
 
-              if (combinedRate >= targetPercentage) {
+              if (combinedRate >= 50) {
                 return (
                   <div className="progress-message success">
                     Good! You have planned your days wisely.
                   </div>
                 );
-              } else if (daysNeededToReachTarget > 0) {
-                const dayWord = daysNeededToReachTarget === 1 ? 'day' : 'days';
+              } else if (daysNeededToReach50 > 0) {
+                const dayWord = daysNeededToReach50 === 1 ? 'day' : 'days';
                 return (
                   <div className="progress-message plan-needed">
-                    Plan {daysNeededToReachTarget} more {dayWord} to reach {targetPercentage}% target 📅
+                    Plan {daysNeededToReach50} more {dayWord} to reach 50% target 📅
                   </div>
                 );
               }
@@ -835,49 +823,13 @@ function App() {
           </div>
           </div>
         </div>
-        <div className="settings-icon-wrapper" onClick={() => setShowSettingsPanel(!showSettingsPanel)} title="Settings">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </div>
-        {showSettingsPanel && (
-          <div className="settings-panel">
-            <div className="settings-header">
-              <h3>Settings</h3>
-              <button className="settings-close" onClick={() => setShowSettingsPanel(false)}>&times;</button>
-            </div>
-            <div className="settings-content">
-              <div className="setting-item">
-                <label className="setting-label">Theme</label>
-                <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-                  <div className={`theme-toggle ${theme}`}>
-                    <div className="theme-toggle-circle">
-                      {theme === 'light' ? '🌙' : '☀️'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="setting-item">
-                <label className="setting-label">Target Office Percentage: {targetPercentage}%</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={targetPercentage}
-                  onChange={(e) => setTargetPercentage(parseInt(e.target.value))}
-                  className="target-slider"
-                />
-                <div className="slider-labels">
-                  <span>10%</span>
-                  <span>50%</span>
-                  <span>100%</span>
-                </div>
-              </div>
+        <div className="theme-switch-wrapper" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} title="Select theme">
+          <div className={`theme-toggle ${theme}`}>
+            <div className="theme-toggle-circle">
+              {theme === 'light' ? '🌙' : '☀️'}
             </div>
           </div>
-        )}
+        </div>
       </div>
       <div className="container">
         <div className="sidebar">
@@ -906,7 +858,7 @@ function App() {
                 <span className="stat-label">ACTUAL OFFICE DAYS %:</span>
                 <div className="stat-value-row">
                   <span className="stat-value">{stats.actualOfficePercentage}%</span>
-                  {parseFloat(stats.actualOfficePercentage) >= targetPercentage && (
+                  {parseFloat(stats.actualOfficePercentage) >= 50 && (
                     <div className="achievement-inline">
                       <span className="achievement-icon-inline">🎉</span>
                       <span className="achievement-text-inline">Target Achieved!</span>
@@ -915,7 +867,7 @@ function App() {
                 </div>
               </div>
               {isCurrentOrFutureMonth() && (
-                <div className={`stat-item combined-percentage ${parseFloat(stats.totalOfficePercentage) >= targetPercentage ? 'success' : 'danger'}`}>
+                <div className={`stat-item combined-percentage ${parseFloat(stats.totalOfficePercentage) >= 50 ? 'success' : 'danger'}`}>
                   <span className="stat-label">PLANNED + ACTUAL DAYS %:</span>
                   <span className="stat-value">{stats.totalOfficePercentage}%</span>
                 </div>
