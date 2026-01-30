@@ -390,15 +390,18 @@ body {
   color: #6366f1;
 }
 
-.settings-icon-wrapper {
+.header-right-section {
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 1002;
+}
+
+.settings-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
   padding: 8px;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -432,7 +435,7 @@ body {
 .settings-panel {
   position: absolute;
   top: 45px;
-  right: 12px;
+  right: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 10px;
