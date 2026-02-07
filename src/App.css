@@ -631,6 +631,15 @@ body {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.cycle-select option:disabled {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+[data-theme="dark"] .cycle-select option:disabled {
+  color: #6b7280;
+}
+
 .cycle-end-info {
   font-size: 0.7rem;
   font-weight: 600;
