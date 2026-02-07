@@ -29,6 +29,14 @@ function App() {
     const savedTarget = localStorage.getItem('targetPercentage');
     return savedTarget ? parseInt(savedTarget) : 50; // Default is 50% for existing users
   });
+  const [cycleStartMonth, setCycleStartMonth] = useState(() => {
+    const savedCycleStart = localStorage.getItem('cycleStartMonth');
+    return savedCycleStart ? parseInt(savedCycleStart) : 0; // Default is January (0)
+  });
+  const [cycleStartYear, setCycleStartYear] = useState(() => {
+    const savedCycleYear = localStorage.getItem('cycleStartYear');
+    return savedCycleYear ? parseInt(savedCycleYear) : new Date().getFullYear();
+  });
 
   useEffect(() => {
     localStorage.setItem('attendance', JSON.stringify(attendance));
@@ -46,6 +54,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem('targetPercentage', targetPercentage.toString());
   }, [targetPercentage]);
+
+  useEffect(() => {
+    localStorage.setItem('cycleStartMonth', cycleStartMonth.toString());
+  }, [cycleStartMonth]);
+
+  useEffect(() => {
+    localStorage.setItem('cycleStartYear', cycleStartYear.toString());
+  }, [cycleStartYear]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -497,6 +513,82 @@ function App() {
 
   const historicalStats = getHistoricalStats();
 
+  const getAverageAttendance = () => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    let totalPercentage = 0;
+    let validMonthsCount = 0;
+
+    // Calculate the 12-month cycle based on start month and year
+    const cycleMonths = [];
+    for (let i = 0; i < 12; i++) {
+      const monthIndex = (cycleStartMonth + i) % 12;
+      const yearOffset = Math.floor((cycleStartMonth + i) / 12);
+      const year = cycleStartYear + yearOffset;
+
+      // Only include months that are not in the future and not the current month
+      const isCurrentMonth = (year === currentYear && monthIndex === currentMonth);
+      const isFuture = (year > currentYear) || (year === currentYear && monthIndex > currentMonth);
+
+      if (!isCurrentMonth && !isFuture) {
+        cycleMonths.push({ year, month: monthIndex });
+      }
+    }
+
+    // Calculate percentage for each month in the cycle
+    cycleMonths.forEach(({ year, month }) => {
+      const lastDay = new Date(year, month + 1, 0).getDate();
+
+      let actualOffice = 0;
+      let workingDays = 0;
+
+      for (let day = 1; day <= lastDay; day++) {
+        const date = new Date(year, month, day);
+        const dayOfWeek = date.getDay();
+        const isWeekendDay = dayOfWeek === 0 || dayOfWeek === 6;
+
+        if (!isWeekendDay) {
+          const dateKey = `${year}-${month}-${day}`;
+          const status = attendance[dateKey];
+
+          if (status !== 'holiday') {
+            workingDays++;
+          }
+
+          if (status === 'office') {
+            actualOffice++;
+          }
+        }
+      }
+
+      // Only consider months where person has actually gone to office
+      if (actualOffice > 0 && workingDays > 0) {
+        const percentage = (actualOffice / workingDays) * 100;
+        totalPercentage += percentage;
+        validMonthsCount++;
+      }
+    });
+
+    const averagePercentage = validMonthsCount > 0 ? (totalPercentage / validMonthsCount).toFixed(1) : 0;
+
+    // Calculate cycle end month and year
+    const cycleEndMonth = (cycleStartMonth + 11) % 12;
+    const cycleEndYear = cycleStartYear + Math.floor((cycleStartMonth + 11) / 12);
+
+    return {
+      averagePercentage,
+      validMonthsCount,
+      cycleStartMonth,
+      cycleStartYear,
+      cycleEndMonth,
+      cycleEndYear
+    };
+  };
+
+  const averageAttendance = getAverageAttendance();
+
   const exportAllData = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -899,6 +991,38 @@ function App() {
                     <span>100%</span>
                   </div>
                 </div>
+                <div className="setting-item cycle-setting">
+                  <label className="setting-label">📅  Cycle (12 months)</label>
+                  <div className="cycle-inputs">
+                    <div className="cycle-input-group">
+                      <label className="cycle-input-label">Start Month</label>
+                      <select
+                        value={cycleStartMonth}
+                        onChange={(e) => setCycleStartMonth(parseInt(e.target.value))}
+                        className="cycle-select"
+                      >
+                        {monthNames.map((name, index) => (
+                          <option key={index} value={index}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="cycle-input-group">
+                      <label className="cycle-input-label">Year</label>
+                      <select
+                        value={cycleStartYear}
+                        onChange={(e) => setCycleStartYear(parseInt(e.target.value))}
+                        className="cycle-select"
+                      >
+                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="cycle-end-info">
+                    End: {monthNames[(cycleStartMonth + 11) % 12]} {cycleStartYear + Math.floor((cycleStartMonth + 11) / 12)}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -964,6 +1088,28 @@ function App() {
                       <div className="trend-percent">{stat.percentage.toFixed(0)}%</div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {averageAttendance.validMonthsCount > 0 && (
+              <div className="average-attendance">
+                <h4>
+                  📊 Average Attendance
+                  <span className="info-icon-wrapper">
+                    <span className="info-icon">i</span>
+                    <span className="info-tooltip">
+                      Average is calculated only from months where office attendance is marked.
+                      Months with no attendance data are excluded, assuming no data has been entered.
+                    </span>
+                  </span>
+                </h4>
+                <div className="average-content">
+                  <div className="average-percentage">{averageAttendance.averagePercentage}%</div>
+                  <div className="average-info">Based on past {averageAttendance.validMonthsCount} {averageAttendance.validMonthsCount === 1 ? 'month' : 'months'}</div>
+                  <div className="average-cycle">
+                    Cycle: {monthNames[averageAttendance.cycleStartMonth]} {averageAttendance.cycleStartYear} - {monthNames[averageAttendance.cycleEndMonth]} {averageAttendance.cycleEndYear}
+                  </div>
                 </div>
               </div>
             )}
