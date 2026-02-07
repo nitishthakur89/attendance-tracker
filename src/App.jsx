@@ -998,22 +998,57 @@ function App() {
                       <label className="cycle-input-label">Start Month</label>
                       <select
                         value={cycleStartMonth}
-                        onChange={(e) => setCycleStartMonth(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const newMonth = parseInt(e.target.value);
+                          const today = new Date();
+                          const currentYear = today.getFullYear();
+                          const currentMonth = today.getMonth();
+
+                          // If selected month is in the future for current year, don't allow it
+                          if (cycleStartYear === currentYear && newMonth > currentMonth) {
+                            return; // Don't update if it would be a future month
+                          }
+                          setCycleStartMonth(newMonth);
+                        }}
                         className="cycle-select"
                       >
-                        {monthNames.map((name, index) => (
-                          <option key={index} value={index}>{name}</option>
-                        ))}
+                        {monthNames.map((name, index) => {
+                          const today = new Date();
+                          const currentYear = today.getFullYear();
+                          const currentMonth = today.getMonth();
+                          const isFuture = cycleStartYear === currentYear && index > currentMonth;
+
+                          return (
+                            <option key={index} value={index} disabled={isFuture}>
+                              {name}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     <div className="cycle-input-group">
                       <label className="cycle-input-label">Year</label>
                       <select
                         value={cycleStartYear}
-                        onChange={(e) => setCycleStartYear(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          const newYear = parseInt(e.target.value);
+                          const today = new Date();
+                          const currentYear = today.getFullYear();
+                          const currentMonth = today.getMonth();
+
+                          // If new year is current year and selected month is in future, reset to current month
+                          if (newYear === currentYear && cycleStartMonth > currentMonth) {
+                            setCycleStartMonth(currentMonth);
+                          }
+                          setCycleStartYear(newYear);
+                        }}
                         className="cycle-select"
                       >
-                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 4 + i).filter(year => {
+                          const today = new Date();
+                          const currentYear = today.getFullYear();
+                          return year <= currentYear; // Only show current and past years
+                        }).map(year => (
                           <option key={year} value={year}>{year}</option>
                         ))}
                       </select>
