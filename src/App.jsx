@@ -528,26 +528,23 @@ function App() {
       const yearOffset = Math.floor((cycleStartMonth + i) / 12);
       const year = cycleStartYear + yearOffset;
 
-      // Include current month and all past months, exclude only future months
+      // Only include months that are not in the future and not the current month
+      const isCurrentMonth = (year === currentYear && monthIndex === currentMonth);
       const isFuture = (year > currentYear) || (year === currentYear && monthIndex > currentMonth);
 
-      if (!isFuture) {
-        cycleMonths.push({ year, month: monthIndex, isCurrentMonth: year === currentYear && monthIndex === currentMonth });
+      if (!isCurrentMonth && !isFuture) {
+        cycleMonths.push({ year, month: monthIndex });
       }
     }
 
     // Calculate percentage for each month in the cycle
-    cycleMonths.forEach(({ year, month, isCurrentMonth }) => {
+    cycleMonths.forEach(({ year, month }) => {
       const lastDay = new Date(year, month + 1, 0).getDate();
-      const todayDate = today.getDate();
 
       let actualOffice = 0;
       let workingDays = 0;
 
-      // For current month, only count days up to today
-      const endDay = isCurrentMonth ? todayDate : lastDay;
-
-      for (let day = 1; day <= endDay; day++) {
+      for (let day = 1; day <= lastDay; day++) {
         const date = new Date(year, month, day);
         const dayOfWeek = date.getDay();
         const isWeekendDay = dayOfWeek === 0 || dayOfWeek === 6;
@@ -1137,14 +1134,14 @@ function App() {
                   <span className="info-icon-wrapper">
                     <span className="info-icon">i</span>
                     <span className="info-tooltip">
-                      Average is calculated from months where office attendance is marked (including current month up to today).
+                      Average is calculated only from months where office attendance is marked.
                       Months with no attendance data are excluded, assuming no data has been entered.
                     </span>
                   </span>
                 </h4>
                 <div className="average-content">
                   <div className="average-percentage">{averageAttendance.averagePercentage}%</div>
-                  <div className="average-info">Based on {averageAttendance.validMonthsCount} {averageAttendance.validMonthsCount === 1 ? 'month' : 'months'}</div>
+                  <div className="average-info">Based on past {averageAttendance.validMonthsCount} {averageAttendance.validMonthsCount === 1 ? 'month' : 'months'}</div>
                   <div className="average-cycle">
                     Cycle: {monthNames[averageAttendance.cycleStartMonth]} {averageAttendance.cycleStartYear} - {monthNames[averageAttendance.cycleEndMonth]} {averageAttendance.cycleEndYear}
                   </div>
